@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from marge.config import SiteConfig
+from marge.css import UsedSelectors, collect_used_selectors, prune_css
 from marge.frontmatter import FrontMatterError
 from marge.page import Page, PageError, discover_pages
 from marge.template import TemplateError, render
@@ -23,10 +24,20 @@ def build_site(config: SiteConfig, src: Path, out: Path) -> None:
     posts = _build_posts_context(pages, src)
     site = {"title": config.title, "base_url": config.base_url}
 
-    for page in pages:
-        _render_page(page, site, posts, config.template_dir, out)
+    rendered = [
+        _render_page(page, site, posts, config.template_dir, out) for page in pages
+    ]
 
-    _copy_assets(src, out)
+    used = None
+    if config.prune_css:
+        scanned = collect_used_selectors(rendered)
+        used = UsedSelectors(
+            tags=scanned.tags,
+            classes=scanned.classes | config.prune_css_safelist,
+            ids=scanned.ids,
+        )
+
+    _copy_assets(src, out, used)
 
 
 def _build_posts_context(pages: list[Page], content_dir: Path) -> list[dict[str, Any]]:
@@ -47,7 +58,7 @@ def _render_page(
     posts: list[dict[str, Any]],
     template_dir: Path,
     out: Path,
-) -> None:
+) -> str:
     page_context = {**page.metadata, "url": page.url}
     context: dict[str, Any] = {"site": site, "page": page_context, "posts": posts}
 
@@ -62,11 +73,15 @@ def _render_page(
     dest = out / page.rel_path
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(html)
+    return html
 
 
-def _copy_assets(src: Path, out: Path) -> None:
+def _copy_assets(src: Path, out: Path, used: UsedSelectors | None = None) -> None:
     for path in src.rglob("*"):
         if path.is_file() and path.suffix != ".html":
             dest = out / path.relative_to(src)
             dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(path.read_bytes())
+            if used is not None and path.suffix == ".css":
+                dest.write_text(prune_css(path.read_text(), used))
+            else:
+                dest.write_bytes(path.read_bytes())

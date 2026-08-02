@@ -12,6 +12,8 @@ class SiteConfig:
     content_dir: Path = Path("content")
     output_dir: Path = Path("site")
     template_dir: Path = Path("templates")
+    prune_css: bool = False
+    prune_css_safelist: frozenset[str] = frozenset()
 
 
 def load_config(path: Path) -> SiteConfig:
@@ -23,4 +25,6 @@ def load_config(path: Path) -> SiteConfig:
         content_dir=Path(data.get("content_dir", "content")),
         output_dir=Path(data.get("output_dir", "site")),
         template_dir=Path(data.get("template_dir", "templates")),
+        prune_css=data.get("prune_css", False),
+        prune_css_safelist=frozenset(data.get("prune_css_safelist", [])),
     )

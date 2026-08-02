@@ -1,9 +1,12 @@
 """Command line interface for marge."""
 
 import argparse
+import sys
 from pathlib import Path
 
 from marge import __version__
+from marge.build import BuildError, build_site
+from marge.config import load_config
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -23,29 +26,39 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument(
         "src",
         nargs="?",
-        default=Path("content"),
+        default=None,
         type=Path,
-        help="Source directory (default: content).",
+        help="Source directory (default: from config, or content).",
     )
     build.add_argument(
         "-o",
         "--out",
-        default=Path("site"),
+        default=None,
         type=Path,
-        help="Output directory (default: site).",
+        help="Output directory (default: from config, or site).",
+    )
+    build.add_argument(
+        "-c",
+        "--config",
+        default=Path("config.toml"),
+        type=Path,
+        help="Site config file (default: config.toml).",
     )
     return parser
-
-
-def build_site(src: Path, out: Path) -> int:
-    """Build the site at `src` into `out`. Returns an exit code."""
-    print(f"marge: would build {src} -> {out}")
-    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     """Run the CLI. Returns a process exit code."""
     args = build_parser().parse_args(argv)
-    if args.command == "build":
-        return build_site(args.src, args.out)
-    return 1
+    if args.command != "build":
+        return 1
+
+    config = load_config(args.config)
+    src = args.src if args.src is not None else config.content_dir
+    out = args.out if args.out is not None else config.output_dir
+    try:
+        build_site(config, src, out)
+    except BuildError as exc:
+        print(f"marge: {exc}", file=sys.stderr)
+        return 1
+    return 0

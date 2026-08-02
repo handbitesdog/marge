@@ -1,6 +1,8 @@
 # Project overview
 
-marge is a simple static site generator written in Python 3 that outputs HTML/CSS/JS. The focus is on clean syntax and producing performant and readable code.
+marge is a simple static site generator written in Python 3 that outputs
+HTML/CSS/JS. The focus is on clean syntax and producing performant and readable
+code.
 
 # Environment
 
@@ -38,11 +40,29 @@ src/marge/
 
 # Code style
 
-- Use comments only when documenting a function/file/etc. according to proper conventions or if code may be confusing without extra context.
+- Use comments only to document a function/file/etc. according to proper
+  conventions, or where code would be confusing without extra context.
 - Keep lines below ≈90 characters (enforced by `[tool.ruff] line-length = 90`).
 - Use short and descriptive variable/function names.
 - Avoid excessively long functions/files.
 
 # Git conventions
 
-- Always create a new branch from `main` for making changes. Never commit directly to `main`.
+- Do all work on a branch off `main` and merge it back; don't commit changes
+  directly to `main`. The one exception is the root commit that scaffolds a
+  repository, which has no branch to come from.
+- Name branches `<type>/<short-description>`, reusing the commit types below:
+  `feat/template-loader`, `fix/empty-content-dir`, `chore/bump-ruff`.
+- Write commit subjects as `<type>: <summary>` — imperative mood, ≤72
+  characters, no trailing period. Types: `feat`, `fix`, `refactor`, `perf`,
+  `docs`, `test`, `chore`. Add a body when the *why* isn't obvious from the diff.
+- Keep each commit to one logical change. Formatting-only churn goes in its own
+  `chore:` commit.
+- Before committing, `poetry run ruff format .`, `poetry run ruff check .`, and
+  `poetry run mypy` must all pass.
+- When `pyproject.toml` dependencies change, commit the updated `poetry.lock` in
+  the same commit.
+- Rebase an unmerged branch onto `main` to keep its history linear, then merge
+  with `--no-ff` so the branch stays visible. Never rewrite commits already on
+  `main`.
+- Delete branches once they're merged.

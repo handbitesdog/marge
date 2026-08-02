@@ -23,20 +23,31 @@ code. This will be primarily used for my blog and browser tools.
 - `poetry run marge --help` — run the CLI.
 - `poetry run ruff check .` — lint. `poetry run ruff format .` — format.
 - `poetry run mypy` — type check (`strict`, scoped to `src` via `pyproject.toml`).
+- `poetry run pytest` — run the test suite (`tests/`).
 
 # Project structure
 
 ```
 src/marge/
-├── __init__.py   package version
-├── __main__.py   enables `python -m marge`
-└── cli.py        argparse entry point; `main()` returns an exit code
+├── __init__.py     package version
+├── __main__.py     enables `python -m marge`
+├── cli.py          argparse entry point; `main()` returns an exit code
+├── config.py       SiteConfig, load_config() — parses config.toml
+├── frontmatter.py  parse() — splits a `+++` TOML fence from an HTML body
+├── template.py     render() — the `{{ }}` / `{% include %}` / `{% for %}` engine
+├── page.py         Page, discover_pages() — walks content/ into Page objects
+└── build.py        build_site() — orchestrates discovery, rendering, and output
 ```
 
 - `src/` layout: the package is only importable once installed, so `poetry run`
   exercises the real installed package.
 - New modules go in `src/marge/`. The console script `marge` is wired to
   `marge.cli:main` in `pyproject.toml`.
+- Tests live in `tests/`, mirroring the module they cover (e.g.
+  `tests/test_build.py` for `src/marge/build.py`).
+- See [README.md](README.md) for the authoring syntax (front matter,
+  templates, site config) — that's the user-facing surface these modules
+  implement.
 
 # Code style
 

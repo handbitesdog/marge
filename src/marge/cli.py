@@ -26,16 +26,16 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument(
         "src",
         nargs="?",
-        default=Path("content"),
+        default=None,
         type=Path,
-        help="Source directory (default: content).",
+        help="Source directory (default: from config, or content).",
     )
     build.add_argument(
         "-o",
         "--out",
-        default=Path("site"),
+        default=None,
         type=Path,
-        help="Output directory (default: site).",
+        help="Output directory (default: from config, or site).",
     )
     build.add_argument(
         "-c",
@@ -54,8 +54,10 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     config = load_config(args.config)
+    src = args.src if args.src is not None else config.content_dir
+    out = args.out if args.out is not None else config.output_dir
     try:
-        build_site(config, args.src, args.out)
+        build_site(config, src, out)
     except BuildError as exc:
         print(f"marge: {exc}", file=sys.stderr)
         return 1

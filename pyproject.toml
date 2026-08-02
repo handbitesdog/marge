@@ -5,7 +5,7 @@ description = "A simple static site generator that outputs HTML/CSS/JS."
 requires-python = ">=3.11"
 authors = [{ name = "jackson", email = "handbitesdog@gmail.com" }]
 readme = "README.md"
-dependencies = []
+dependencies = ["tinycss2 (>=1.5.1,<2.0.0)"]
 
 [project.scripts]
 marge = "marge.cli:main"
@@ -17,6 +17,7 @@ packages = [{ include = "marge", from = "src" }]
 ruff = "^0.14"
 mypy = "^1.18"
 pytest = "^9.1.1"
+types-tinycss2 = "^1.5.1.20260414"
 
 [tool.ruff]
 line-length = 90

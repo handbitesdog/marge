@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -77,3 +78,29 @@ def test_build_missing_date_on_post_raises(
     )
     with pytest.raises(BuildError, match="date"):
         build_site(config, content, out)
+
+
+def test_build_prunes_unused_css_when_enabled(
+    project: tuple[Path, Path, Path, SiteConfig],
+) -> None:
+    content, _templates, out, config = project
+    (content / "style.css").write_text("p { color: red; } .unused { color: blue; }")
+    config = replace(config, prune_css=True)
+
+    build_site(config, content, out)
+
+    css = (out / "style.css").read_text()
+    assert "color: red" in css
+    assert ".unused" not in css
+
+
+def test_build_prune_css_safelist_keeps_js_only_class(
+    project: tuple[Path, Path, Path, SiteConfig],
+) -> None:
+    content, _templates, out, config = project
+    (content / "style.css").write_text(".is-open { display: block; }")
+    config = replace(config, prune_css=True, prune_css_safelist=frozenset({"is-open"}))
+
+    build_site(config, content, out)
+
+    assert ".is-open" in (out / "style.css").read_text()

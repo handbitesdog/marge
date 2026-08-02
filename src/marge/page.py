@@ -48,6 +48,8 @@ def _load_page(path: Path, content_dir: Path) -> Page:
         raise PageError(f"{path}: missing required front matter field(s): {names}")
 
     rel_path = path.relative_to(content_dir)
+    if rel_path.parts[0] == "pages":
+        rel_path = Path(*rel_path.parts[1:])
     slug = metadata.get("slug")
     if slug is not None:
         rel_path = rel_path.parent / f"{slug}.html"

@@ -51,6 +51,12 @@ pages under `content/posts/` (used to sort the `posts` listing). `slug`
 overrides the output filename, and `draft = true` excludes a page from
 the build.
 
+Non-post pages can be organized under `content/pages/` — the `pages/`
+segment is stripped from the output path and URL, so
+`content/pages/about.html` builds to `about.html` (`/about.html`), not
+`pages/about.html`. This is purely organizational; pages can also sit
+directly under `content/` with the same result.
+
 ### Templates
 
 Templates support three tags:
@@ -58,7 +64,7 @@ Templates support three tags:
 - `{{ page.title }}` — interpolate a value from `site`, `page`, `posts`,
   or (inside a layout) the rendered `content`. Dotted paths do nested
   lookups.
-- `{% include "partials/nav.html" %}` — inline another template, path
+- `{% include "components/nav.html" %}` — inline another template, path
   relative to `template_dir`.
 - `{% for post in posts %} ... {% endfor %}` — repeat a block once per
   item.

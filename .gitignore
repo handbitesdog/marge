@@ -8,3 +8,8 @@ site/
 .mypy_cache/
 .ruff_cache/
 .DS_Store
+
+# Local dogfood site used to manually exercise the CLI while developing marge.
+content/
+templates/
+config.toml

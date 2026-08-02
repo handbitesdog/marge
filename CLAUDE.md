@@ -7,7 +7,7 @@ code. This will be primarily used for my blog and browser tools.
 # Environment
 
 - Dependencies are managed with [Poetry](https://python-poetry.org/) (2.x).
-- Requires Python ≥3.10. Locally installed: 3.14.6.
+- Requires Python ≥3.11 (stdlib `tomllib`). Locally installed: 3.14.6.
 - The virtualenv lives at `.venv/` in the project root (`virtualenvs.in-project`,
   set in `poetry.toml`).
 - Never `pip install` into `.venv` directly — use `poetry add` so `poetry.lock`

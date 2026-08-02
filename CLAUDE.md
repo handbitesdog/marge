@@ -36,6 +36,7 @@ src/marge/
 ├── frontmatter.py  parse() — splits a `+++` TOML fence from an HTML body
 ├── template.py     render() — the `{{ }}` / `{% include %}` / `{% for %}` engine
 ├── page.py         Page, discover_pages() — walks content/ into Page objects
+├── css.py          collect_used_selectors(), prune_css() — CSS pruning
 └── build.py        build_site() — orchestrates discovery, rendering, and output
 ```
 

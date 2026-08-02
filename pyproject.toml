@@ -1,0 +1,35 @@
+[project]
+name = "marge"
+version = "0.1.0"
+description = "A simple static site generator that outputs HTML/CSS/JS."
+requires-python = ">=3.10"
+authors = [{ name = "jackson", email = "handbitesdog@gmail.com" }]
+readme = "README.md"
+dependencies = []
+
+[project.scripts]
+marge = "marge.cli:main"
+
+[tool.poetry]
+packages = [{ include = "marge", from = "src" }]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.14"
+mypy = "^1.18"
+
+[tool.ruff]
+line-length = 90
+target-version = "py310"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src"]
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"

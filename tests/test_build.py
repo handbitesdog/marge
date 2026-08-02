@@ -45,6 +45,19 @@ def test_build_renders_pages_and_copies_assets(
     assert (out / "style.css").read_text() == "body { color: red; }"
 
 
+def test_build_strips_pages_prefix_from_url(
+    project: tuple[Path, Path, Path, SiteConfig],
+) -> None:
+    content, _templates, out, config = project
+    (content / "pages").mkdir()
+    (content / "pages" / "about.html").write_text(
+        '+++\ntitle = "About"\nlayout = "base"\n+++\n<p>About us</p>\n'
+    )
+    build_site(config, content, out)
+    assert (out / "about.html").exists()
+    assert not (out / "pages").exists()
+
+
 def test_build_skips_drafts(project: tuple[Path, Path, Path, SiteConfig]) -> None:
     content, _templates, out, config = project
     (content / "posts" / "draft.html").write_text(

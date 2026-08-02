@@ -2,7 +2,7 @@
 
 marge is a simple static site generator written in Python 3 that outputs
 HTML/CSS/JS. The focus is on clean syntax and producing performant and readable
-code.
+code. This will be primarily used for my blog and browser tools.
 
 # Environment
 

@@ -64,7 +64,7 @@ func TestRendererWithPreprocessedComponent(t *testing.T) {
 
 	r := &Renderer{}
 	root := template.New("root").Funcs(r.FuncMap())
-	root, err = root.Parse(`{{define "layout"}}<h1>{{.title}}</h1><div>{{.Children}}</div>{{end}}`)
+	root, err = root.Parse(`{{define "layout"}}<h1>{{.title}}</h1><div>{{.children}}</div>{{end}}`)
 	if err != nil {
 		t.Fatalf("parse layout define: %v", err)
 	}

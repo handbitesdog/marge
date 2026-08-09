@@ -25,12 +25,12 @@ const debounce = 150 * time.Millisecond
 
 // watchDirs are the SrcDir subdirectories watched for changes; anything
 // outside them (e.g. DistDir itself) is ignored.
-var watchDirs = []string{"components", "pages", "content", "static"}
+var watchDirs = []string{"components", "layouts", "pages", "content", "static"}
 
 // Run builds the site at src into dist, serves dist over HTTP on addr, and
-// rebuilds whenever a file under src's components/, pages/, content/, or
-// static/ subtrees changes. It blocks until interrupted (SIGINT), then
-// shuts down cleanly.
+// rebuilds whenever a file under src's components/, layouts/, pages/,
+// content/, or static/ subtrees changes. It blocks until interrupted
+// (SIGINT), then shuts down cleanly.
 func Run(src, dist, addr string) error {
 	opts := build.Options{SrcDir: src, DistDir: dist}
 	if err := build.Run(opts); err != nil {

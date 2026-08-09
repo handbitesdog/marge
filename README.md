@@ -7,7 +7,8 @@ blog posts.
 ## Features
 
 - **Components** — an HTML-tag-like syntax for reusable, argument-taking
-  template fragments (layouts are just components).
+  template fragments. Layouts are just components kept in their own
+  `layouts/` folder.
 - **File-based routing with pretty URLs** — `pages/about.html` becomes
   `/about/`.
 - **Collections** — group Markdown content (e.g. blog posts) under
@@ -59,7 +60,8 @@ A `marge` site is expected to look like:
 
 ```
 mysite/
-  components/   # reusable HTML components (layouts are just components)
+  components/   # reusable HTML components
+  layouts/      # page-wrapping components (same syntax, own folder; optional)
   pages/        # routed pages, mapped to pretty URLs (about.html -> /about/)
   content/      # Markdown content with YAML front matter, grouped into collections
   static/       # assets copied byte-for-byte into the output
@@ -67,27 +69,31 @@ mysite/
 
 ## Components
 
-Files under `components/` and `pages/` can use a self-closing or block tag
-syntax inside `{{}}` to render a component:
+Files under `components/`, `layouts/`, and `pages/` can use a self-closing or
+block tag syntax inside `{{}}` to render a component. `components/` and
+`layouts/` share one flat namespace, so the same name can't be defined in
+both.
 
 ```html
-{{<card Title=.Title URL=.URL Date=.Date/>}}
+{{<card title=.Title url=.URL date=.Date/>}}
 ```
 
 ```html
-{{<layout Title="Home">}}
+{{<layout title="Home">}}
 <h1>Welcome to marge</h1>
 {{</layout>}}
 ```
 
-A block tag's body is rendered and passed to the component as `.Children`.
-`key=value` pairs are plain Go template pipeline operands (string literals
-or `.Field`), so `components/layout.html` above can reference `.Title` and
-`.Children` like any other template:
+A block tag's body is rendered and passed to the component as the variable
+`$children`, stable regardless of any `{{range}}`/`{{with}}` elsewhere in the
+component that changes what `.` refers to. `key=value` pairs are plain Go
+template pipeline operands (string literals or `.Field`) — the key is an
+arbitrary lowercase name you choose, so `layouts/layout.html` above can
+reference `.title` and `$children` like any other template:
 
 ```html
-<title>{{.Title}}</title>
-<main>{{.Children}}</main>
+<title>{{.title}}</title>
+<main>{{$children}}</main>
 ```
 
 ## Content & collections
@@ -109,7 +115,7 @@ homepage can list posts the same way a blog index does:
 
 ```html
 {{range .Collections.blog.Items}}
-{{<card Title=.Title URL=.URL Date=.Date/>}}
+{{<card title=.Title url=.URL date=.Date/>}}
 {{end}}
 ```
 

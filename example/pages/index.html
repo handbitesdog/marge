@@ -1,8 +1,8 @@
-{{<layout Title="Home">}}
+{{<layout title="Home">}}
 <h1>Welcome to marge</h1>
 <p>This is the example site for marge, a simple static-site generator.</p>
 <h2>Latest posts</h2>
 {{range .Collections.blog.Items}}
-{{<card Title=.Title URL=.URL Date=.Date/>}}
+{{<card title=.Title url=.URL date=.Date/>}}
 {{end}}
 {{</layout>}}

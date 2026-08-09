@@ -13,14 +13,14 @@ import (
 
 // Options configures a Run.
 type Options struct {
-	SrcDir  string // site source root: components/, pages/, content/, static/
+	SrcDir  string // site source root: components/, layouts/, pages/, content/, static/
 	DistDir string // build output directory; cleaned at the start of Run
 }
 
 // Run executes marge's full build pipeline: it cleans DistDir, loads
-// components, content, and pages into one shared template set, executes
-// every ordinary page and collection item into DistDir, then copies
-// SrcDir/static alongside them.
+// components, layouts, content, and pages into one shared template set,
+// executes every ordinary page and collection item into DistDir, then
+// copies SrcDir/static alongside them.
 func Run(opts Options) error {
 	if err := os.RemoveAll(opts.DistDir); err != nil {
 		return fmt.Errorf("clean dist dir %q: %w", opts.DistDir, err)
@@ -32,7 +32,11 @@ func Run(opts Options) error {
 	renderer := &tmpl.Renderer{}
 	root := template.New("root").Funcs(renderer.FuncMap())
 
-	if err := tmpl.LoadComponents(root, filepath.Join(opts.SrcDir, "components")); err != nil {
+	seen := map[string]string{}
+	if err := tmpl.LoadComponents(root, filepath.Join(opts.SrcDir, "components"), true, seen); err != nil {
+		return err
+	}
+	if err := tmpl.LoadComponents(root, filepath.Join(opts.SrcDir, "layouts"), false, seen); err != nil {
 		return err
 	}
 

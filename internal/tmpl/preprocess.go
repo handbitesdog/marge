@@ -103,11 +103,11 @@ func Preprocess(src, sourceName string) (string, error) {
 			// (valid anywhere) is emitted at the point of use. Named
 			// templates resolve globally, so this doesn't change behavior.
 			root.WriteString(fmt.Sprintf(`{{define %q}}%s{{end}}`, blockName, top.body.String()))
-			out().WriteString(fmt.Sprintf(`{{template %q (dict %s"Children" (render %q .))}}`,
+			out().WriteString(fmt.Sprintf(`{{template %q (dict %s"children" (render %q .))}}`,
 				top.name, dictArgs(top.attrs), blockName))
 
 		case d.selfClosing:
-			out().WriteString(fmt.Sprintf(`{{template %q (dict %s"Children" "")}}`, d.name, dictArgs(d.attrs)))
+			out().WriteString(fmt.Sprintf(`{{template %q (dict %s"children" "")}}`, d.name, dictArgs(d.attrs)))
 
 		default:
 			stack = append(stack, &openBlock{name: d.name, attrs: d.attrs})
@@ -128,7 +128,7 @@ func Preprocess(src, sourceName string) (string, error) {
 }
 
 // dictArgs renders attrs as "key1" val1 "key2" val2, always followed by a
-// trailing space (or empty) so callers can append "Children" ... directly.
+// trailing space (or empty) so callers can append "children" ... directly.
 func dictArgs(attrs []attr) string {
 	if len(attrs) == 0 {
 		return ""

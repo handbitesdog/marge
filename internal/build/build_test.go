@@ -105,7 +105,7 @@ func TestRunCleansExistingDist(t *testing.T) {
 // does not.
 func TestRunMissingItemTemplate(t *testing.T) {
 	src := t.TempDir()
-	writeFile(t, filepath.Join(src, "components", "layout.html"), `{{.Children}}`)
+	writeFile(t, filepath.Join(src, "components", "layout.html"), `{{$children}}`)
 	writeFile(t, filepath.Join(src, "pages", "index.html"), `home`)
 	writeFile(t, filepath.Join(src, "content", "blog", "post.md"),
 		"---\ntitle: Post\ndate: 2024-01-01\n---\nBody.\n")

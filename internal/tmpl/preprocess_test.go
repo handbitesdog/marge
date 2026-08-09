@@ -28,8 +28,8 @@ func mustParse(t *testing.T, out string) {
 }
 
 func TestPreprocessSelfClosing(t *testing.T) {
-	src := `Hello {{<card title="Post" featured=.Featured/>}} world`
-	want := `Hello {{template "card" (dict "title" "Post" "featured" .Featured "children" "")}} world`
+	src := `Hello {{<Card title="Post" featured=.Featured/>}} world`
+	want := `Hello {{template "Card" (dict "title" "Post" "featured" .Featured "children" "")}} world`
 
 	got, err := Preprocess(src, "pages/index.html")
 	if err != nil {
@@ -42,8 +42,8 @@ func TestPreprocessSelfClosing(t *testing.T) {
 }
 
 func TestPreprocessSelfClosingNoAttrs(t *testing.T) {
-	src := `{{<spacer/>}}`
-	want := `{{template "spacer" (dict "children" "")}}`
+	src := `{{<Spacer/>}}`
+	want := `{{template "Spacer" (dict "children" "")}}`
 
 	got, err := Preprocess(src, "components/spacer.html")
 	if err != nil {
@@ -56,9 +56,9 @@ func TestPreprocessSelfClosingNoAttrs(t *testing.T) {
 }
 
 func TestPreprocessNestedBlocks(t *testing.T) {
-	src := `{{<layout title="Home">}}A{{<card/>}}B{{</layout>}}`
-	want := `{{define "__block_pages_index_html_1"}}A{{template "card" (dict "children" "")}}B{{end}}` +
-		`{{template "layout" (dict "title" "Home" "children" (render "__block_pages_index_html_1" .))}}`
+	src := `{{<Layout title="Home">}}A{{<Card/>}}B{{</Layout>}}`
+	want := `{{define "__block_pages_index_html_1"}}A{{template "Card" (dict "children" "")}}B{{end}}` +
+		`{{template "Layout" (dict "title" "Home" "children" (render "__block_pages_index_html_1" .))}}`
 
 	got, err := Preprocess(src, "pages/index.html")
 	if err != nil {
@@ -75,10 +75,10 @@ func TestPreprocessDeeplyNestedBlocks(t *testing.T) {
 	// parse, never nested inside another {{define}}'s body — so both block
 	// defines must land as top-level siblings, however deeply the source
 	// tags were nested. Only the {{template}} calls stay inline.
-	src := `{{<outer>}}A{{<inner>}}B{{</inner>}}C{{</outer>}}`
+	src := `{{<Outer>}}A{{<Inner>}}B{{</Inner>}}C{{</Outer>}}`
 	want := `{{define "__block_pages_index_html_1"}}B{{end}}` +
-		`{{define "__block_pages_index_html_2"}}A{{template "inner" (dict "children" (render "__block_pages_index_html_1" .))}}C{{end}}` +
-		`{{template "outer" (dict "children" (render "__block_pages_index_html_2" .))}}`
+		`{{define "__block_pages_index_html_2"}}A{{template "Inner" (dict "children" (render "__block_pages_index_html_1" .))}}C{{end}}` +
+		`{{template "Outer" (dict "children" (render "__block_pages_index_html_2" .))}}`
 
 	got, err := Preprocess(src, "pages/index.html")
 	if err != nil {
@@ -93,11 +93,11 @@ func TestPreprocessDeeplyNestedBlocks(t *testing.T) {
 func TestPreprocessNestedBlockSurroundedByText(t *testing.T) {
 	// Definitions hoisted to root must not corrupt literal text that
 	// appears before/after the block in the original source.
-	src := `Header {{<outer>}}A{{<inner>}}B{{</inner>}}C{{</outer>}} Footer`
+	src := `Header {{<Outer>}}A{{<Inner>}}B{{</Inner>}}C{{</Outer>}} Footer`
 	want := `Header ` +
 		`{{define "__block_pages_index_html_1"}}B{{end}}` +
-		`{{define "__block_pages_index_html_2"}}A{{template "inner" (dict "children" (render "__block_pages_index_html_1" .))}}C{{end}}` +
-		`{{template "outer" (dict "children" (render "__block_pages_index_html_2" .))}}` +
+		`{{define "__block_pages_index_html_2"}}A{{template "Inner" (dict "children" (render "__block_pages_index_html_1" .))}}C{{end}}` +
+		`{{template "Outer" (dict "children" (render "__block_pages_index_html_2" .))}}` +
 		` Footer`
 
 	got, err := Preprocess(src, "pages/index.html")
@@ -111,32 +111,44 @@ func TestPreprocessNestedBlockSurroundedByText(t *testing.T) {
 }
 
 func TestPreprocessUnclosedBlock(t *testing.T) {
-	src := `{{<card title="X">}}no closing tag`
+	src := `{{<Card title="X">}}no closing tag`
 
 	_, err := Preprocess(src, "pages/index.html")
 	if err == nil {
 		t.Fatal("Preprocess returned no error for unclosed block")
 	}
-	if !strings.Contains(err.Error(), "unclosed") || !strings.Contains(err.Error(), "card") {
+	if !strings.Contains(err.Error(), "unclosed") || !strings.Contains(err.Error(), "Card") {
 		t.Fatalf("error %q does not report the unclosed component", err)
 	}
 }
 
 func TestPreprocessMismatchedClosingTag(t *testing.T) {
-	src := `{{<card>}}body{{</widget>}}`
+	src := `{{<Card>}}body{{</Widget>}}`
 
 	_, err := Preprocess(src, "pages/index.html")
 	if err == nil {
 		t.Fatal("Preprocess returned no error for mismatched closing tag")
 	}
-	if !strings.Contains(err.Error(), "card") || !strings.Contains(err.Error(), "widget") {
+	if !strings.Contains(err.Error(), "Card") || !strings.Contains(err.Error(), "Widget") {
 		t.Fatalf("error %q does not name both the expected and actual tag", err)
 	}
 }
 
+func TestPreprocessLowercaseNameRejected(t *testing.T) {
+	src := `{{<card/>}}`
+
+	_, err := Preprocess(src, "pages/index.html")
+	if err == nil {
+		t.Fatal("Preprocess returned no error for a lowercase component name")
+	}
+	if !strings.Contains(err.Error(), "card") || !strings.Contains(err.Error(), "uppercase") {
+		t.Fatalf("error %q does not report the capitalization rule", err)
+	}
+}
+
 func TestPreprocessQuotedValueWithBraceAndAngle(t *testing.T) {
-	src := `{{<card title="a}b" note="x>y"/>}}`
-	want := `{{template "card" (dict "title" "a}b" "note" "x>y" "children" "")}}`
+	src := `{{<Card title="a}b" note="x>y"/>}}`
+	want := `{{template "Card" (dict "title" "a}b" "note" "x>y" "children" "")}}`
 
 	got, err := Preprocess(src, "pages/index.html")
 	if err != nil {

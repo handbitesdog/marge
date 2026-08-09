@@ -105,7 +105,7 @@ func TestRunCleansExistingDist(t *testing.T) {
 // does not.
 func TestRunMissingItemTemplate(t *testing.T) {
 	src := t.TempDir()
-	writeFile(t, filepath.Join(src, "components", "layout.html"), `{{$children}}`)
+	writeFile(t, filepath.Join(src, "components", "Layout.html"), `{{$children}}`)
 	writeFile(t, filepath.Join(src, "pages", "index.html"), `home`)
 	writeFile(t, filepath.Join(src, "content", "blog", "post.md"),
 		"---\ntitle: Post\ndate: 2024-01-01\n---\nBody.\n")
@@ -116,5 +116,36 @@ func TestRunMissingItemTemplate(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "blog") {
 		t.Fatalf("error %q does not name the collection", err)
+	}
+}
+
+// TestRunOnlyPagesRequired checks that Run succeeds with nothing but a
+// pages/ directory present — components/, layouts/, content/, and static/
+// are all optional.
+func TestRunOnlyPagesRequired(t *testing.T) {
+	src := t.TempDir()
+	writeFile(t, filepath.Join(src, "pages", "index.html"), `home`)
+
+	dist := t.TempDir()
+	if err := Run(Options{SrcDir: src, DistDir: dist}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	got, err := os.ReadFile(filepath.Join(dist, "index.html"))
+	if err != nil {
+		t.Fatalf("read index.html: %v", err)
+	}
+	if string(got) != "home" {
+		t.Fatalf("index.html = %q, want %q", got, "home")
+	}
+}
+
+// TestRunMissingPagesDir checks that pages/ remains the one required
+// subdirectory: Run fails when it's absent, even though every other
+// subdirectory is optional.
+func TestRunMissingPagesDir(t *testing.T) {
+	src := t.TempDir()
+	if err := Run(Options{SrcDir: src, DistDir: t.TempDir()}); err == nil {
+		t.Fatal("Run should error when pages/ is missing")
 	}
 }

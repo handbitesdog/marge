@@ -56,7 +56,7 @@ func TestRendererBeforeSetTemplateSet(t *testing.T) {
 // that render(name, .) passes the ambient dot at the call site so a
 // captured children block can still see the outer page's fields.
 func TestRendererWithPreprocessedComponent(t *testing.T) {
-	src := `{{<layout title=.Title>}}Hello {{.Name}}{{</layout>}}`
+	src := `{{<Layout title=.Title>}}Hello {{.Name}}{{</Layout>}}`
 	out, err := Preprocess(src, "pages/index.html")
 	if err != nil {
 		t.Fatalf("Preprocess: %v", err)
@@ -64,7 +64,7 @@ func TestRendererWithPreprocessedComponent(t *testing.T) {
 
 	r := &Renderer{}
 	root := template.New("root").Funcs(r.FuncMap())
-	root, err = root.Parse(`{{define "layout"}}<h1>{{.title}}</h1><div>{{.children}}</div>{{end}}`)
+	root, err = root.Parse(`{{define "Layout"}}<h1>{{.title}}</h1><div>{{.children}}</div>{{end}}`)
 	if err != nil {
 		t.Fatalf("parse layout define: %v", err)
 	}

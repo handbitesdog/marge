@@ -13,7 +13,7 @@ import (
 
 // Options configures a Run.
 type Options struct {
-	SrcDir  string // site source root: components/, layouts/, pages/, content/, static/
+	SrcDir  string // site source root: components/, layouts/, pages/, content/, static/ — only pages/ is required
 	DistDir string // build output directory; cleaned at the start of Run
 }
 
@@ -33,10 +33,10 @@ func Run(opts Options) error {
 	root := template.New("root").Funcs(renderer.FuncMap())
 
 	seen := map[string]string{}
-	if err := tmpl.LoadComponents(root, filepath.Join(opts.SrcDir, "components"), true, seen); err != nil {
+	if err := tmpl.LoadComponents(root, filepath.Join(opts.SrcDir, "components"), seen); err != nil {
 		return err
 	}
-	if err := tmpl.LoadComponents(root, filepath.Join(opts.SrcDir, "layouts"), false, seen); err != nil {
+	if err := tmpl.LoadComponents(root, filepath.Join(opts.SrcDir, "layouts"), seen); err != nil {
 		return err
 	}
 

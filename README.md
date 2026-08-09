@@ -60,35 +60,40 @@ A `marge` site is expected to look like:
 
 ```
 mysite/
-  components/   # reusable HTML components
+  components/   # reusable HTML components (optional)
   layouts/      # page-wrapping components (same syntax, own folder; optional)
-  pages/        # routed pages, mapped to pretty URLs (about.html -> /about/)
-  content/      # Markdown content with YAML front matter, grouped into collections
-  static/       # assets copied byte-for-byte into the output
+  pages/        # routed pages, mapped to pretty URLs (about.html -> /about/) — required
+  content/      # Markdown content with YAML front matter, grouped into collections (optional)
+  static/       # assets copied byte-for-byte into the output (optional)
 ```
+
+`pages/` is the only required directory — everything else can be omitted
+entirely if a site doesn't need it.
 
 ## Components
 
 Files under `components/`, `layouts/`, and `pages/` can use a self-closing or
 block tag syntax inside `{{}}` to render a component. `components/` and
 `layouts/` share one flat namespace, so the same name can't be defined in
-both.
+both. A component or layout's name — and its file's basename — must start
+with an uppercase letter (`Card`, not `card`), so a call site reads as a
+component invocation at a glance.
 
 ```html
-{{<card title=.Title url=.URL date=.Date/>}}
+{{<Card title=.Title url=.URL date=.Date/>}}
 ```
 
 ```html
-{{<layout title="Home">}}
+{{<Layout title="Home">}}
 <h1>Welcome to marge</h1>
-{{</layout>}}
+{{</Layout>}}
 ```
 
 A block tag's body is rendered and passed to the component as the variable
 `$children`, stable regardless of any `{{range}}`/`{{with}}` elsewhere in the
 component that changes what `.` refers to. `key=value` pairs are plain Go
 template pipeline operands (string literals or `.Field`) — the key is an
-arbitrary lowercase name you choose, so `layouts/layout.html` above can
+arbitrary lowercase name you choose, so `layouts/Layout.html` above can
 reference `.title` and `$children` like any other template:
 
 ```html
@@ -119,7 +124,7 @@ homepage can list posts the same way a blog index does:
 
 ```html
 {{range .Collections.blog.Items}}
-{{<card title=.Title url=.URL date=.Date/>}}
+{{<Card title=.Title url=.URL date=.Date/>}}
 {{end}}
 ```
 

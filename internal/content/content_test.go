@@ -76,8 +76,11 @@ func TestLoadAllPropagatesFrontMatterError(t *testing.T) {
 }
 
 func TestLoadAllMissingDir(t *testing.T) {
-	_, err := LoadAll(filepath.Join(t.TempDir(), "does-not-exist"))
-	if err == nil {
-		t.Fatal("LoadAll should error when contentDir is missing")
+	collections, err := LoadAll(filepath.Join(t.TempDir(), "does-not-exist"))
+	if err != nil {
+		t.Fatalf("LoadAll should not error when contentDir is missing: %v", err)
+	}
+	if len(collections) != 0 {
+		t.Fatalf("collections = %#v, want empty", collections)
 	}
 }

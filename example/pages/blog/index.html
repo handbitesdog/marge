@@ -1,6 +1,6 @@
-{{<layout title="Blog">}}
+{{<Layout title="Blog">}}
 <h1>Blog</h1>
 {{range .Collections.blog.Items}}
-{{<card title=.Title url=.URL date=.Date/>}}
+{{<Card title=.Title url=.URL date=.Date/>}}
 {{end}}
-{{</layout>}}
+{{</Layout>}}

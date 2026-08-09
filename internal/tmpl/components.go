@@ -17,18 +17,17 @@ import (
 // what "." refers to. Component names never collide with page names since
 // pages are registered under their full relative path including ".html".
 //
-// If required is false, a missing dir is not an error — LoadComponents
-// simply defines nothing.
+// A missing dir is not an error — LoadComponents simply defines nothing.
 //
 // seen tracks each defined name back to the directory it came from, so a
 // name reused across multiple LoadComponents calls against the same root
 // (e.g. once for components/, once for layouts/) is a build-time error
 // instead of a silent last-definition-wins override. Pass a fresh map on the
 // first call and reuse it across subsequent calls against the same root.
-func LoadComponents(root *template.Template, dir string, required bool, seen map[string]string) error {
+func LoadComponents(root *template.Template, dir string, seen map[string]string) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
-		if !required && os.IsNotExist(err) {
+		if os.IsNotExist(err) {
 			return nil
 		}
 		return fmt.Errorf("read components dir %q: %w", dir, err)
@@ -46,6 +45,9 @@ func LoadComponents(root *template.Template, dir string, required bool, seen map
 		}
 
 		name := strings.TrimSuffix(entry.Name(), ".html")
+		if !startsUpper(name) {
+			return fmt.Errorf("component %q: component/layout names must start with an uppercase letter", path)
+		}
 		if prevDir, ok := seen[name]; ok {
 			return fmt.Errorf("component %q is defined in both %q and %q", name, prevDir, dir)
 		}

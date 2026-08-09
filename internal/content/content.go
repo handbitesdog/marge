@@ -21,9 +21,15 @@ import (
 // remaining body is rendered as Markdown (raw HTML is passed through
 // unescaped, since content authors are trusted). Items within a collection
 // are sorted by Date descending.
+//
+// A missing contentDir is not an error — LoadAll simply returns no
+// collections.
 func LoadAll(contentDir string) (map[string]site.Collection, error) {
 	entries, err := os.ReadDir(contentDir)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return map[string]site.Collection{}, nil
+		}
 		return nil, fmt.Errorf("read content dir %q: %w", contentDir, err)
 	}
 

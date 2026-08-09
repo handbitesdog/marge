@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // attr is a single key="value" (or key=.Pipeline) pair on a component tag.
@@ -233,6 +234,9 @@ func parseDirective(body string) (directive, error) {
 	if d.name == "" {
 		return directive{}, fmt.Errorf("component tag missing name")
 	}
+	if !startsUpper(d.name) {
+		return directive{}, fmt.Errorf("component %q: component/layout names must start with an uppercase letter", d.name)
+	}
 
 	for {
 		skipSpace()
@@ -299,6 +303,14 @@ func parseDirective(body string) (directive, error) {
 
 func isSpace(b byte) bool {
 	return b == ' ' || b == '\t' || b == '\n' || b == '\r'
+}
+
+// startsUpper reports whether name begins with an uppercase letter, the
+// naming convention required of every component and layout so a call site
+// like {{<Card/>}} reads as a component invocation at a glance.
+func startsUpper(name string) bool {
+	r, _ := utf8.DecodeRuneInString(name)
+	return unicode.IsUpper(r)
 }
 
 // sanitizeName maps sourceName to a string safe for use inside a generated

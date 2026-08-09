@@ -22,22 +22,22 @@ func writeFile(t *testing.T, path, content string) {
 // available as $children.
 func TestLoadComponents(t *testing.T) {
 	dir := t.TempDir()
-	writeFile(t, filepath.Join(dir, "card.html"), `<div class="card">{{.title}}{{$children}}</div>`)
-	writeFile(t, filepath.Join(dir, "layout.html"), `<body>{{<card title="Sidebar"/>}}{{$children}}</body>`)
+	writeFile(t, filepath.Join(dir, "Card.html"), `<div class="card">{{.title}}{{$children}}</div>`)
+	writeFile(t, filepath.Join(dir, "Layout.html"), `<body>{{<Card title="Sidebar"/>}}{{$children}}</body>`)
 	writeFile(t, filepath.Join(dir, "notes.txt"), `not a component`)
 	if err := os.Mkdir(filepath.Join(dir, "nested"), 0o755); err != nil {
 		t.Fatalf("mkdir nested: %v", err)
 	}
-	writeFile(t, filepath.Join(dir, "nested", "ignored.html"), `<p>ignored</p>`)
+	writeFile(t, filepath.Join(dir, "nested", "Ignored.html"), `<p>ignored</p>`)
 
 	r := &Renderer{}
 	root := template.New("root").Funcs(r.FuncMap())
-	if err := LoadComponents(root, dir, true, map[string]string{}); err != nil {
+	if err := LoadComponents(root, dir, map[string]string{}); err != nil {
 		t.Fatalf("LoadComponents: %v", err)
 	}
 	r.SetTemplateSet(root)
 
-	if root.Lookup("ignored") != nil {
+	if root.Lookup("Ignored") != nil {
 		t.Fatal("LoadComponents should not recurse into subdirectories")
 	}
 	if root.Lookup("notes") != nil {
@@ -46,7 +46,7 @@ func TestLoadComponents(t *testing.T) {
 
 	var buf strings.Builder
 	data := map[string]any{"children": template.HTML("body-content")}
-	if err := root.ExecuteTemplate(&buf, "layout", data); err != nil {
+	if err := root.ExecuteTemplate(&buf, "Layout", data); err != nil {
 		t.Fatalf("execute layout: %v", err)
 	}
 	want := `<body><div class="card">Sidebar</div>body-content</body>`
@@ -57,34 +57,40 @@ func TestLoadComponents(t *testing.T) {
 
 func TestLoadComponentsPreprocessError(t *testing.T) {
 	dir := t.TempDir()
-	writeFile(t, filepath.Join(dir, "broken.html"), `{{<card>}}no closing tag`)
+	writeFile(t, filepath.Join(dir, "Broken.html"), `{{<Card>}}no closing tag`)
 
 	r := &Renderer{}
 	root := template.New("root").Funcs(r.FuncMap())
-	err := LoadComponents(root, dir, true, map[string]string{})
+	err := LoadComponents(root, dir, map[string]string{})
 	if err == nil {
 		t.Fatal("LoadComponents should error on malformed component source")
 	}
-	if !strings.Contains(err.Error(), "broken.html") {
+	if !strings.Contains(err.Error(), "Broken.html") {
 		t.Fatalf("error %q does not name the source file", err)
 	}
 }
 
-func TestLoadComponentsMissingDirRequired(t *testing.T) {
+func TestLoadComponentsLowercaseNameRejected(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "card.html"), `<div class="card"></div>`)
+
 	r := &Renderer{}
 	root := template.New("root").Funcs(r.FuncMap())
-	err := LoadComponents(root, filepath.Join(t.TempDir(), "does-not-exist"), true, map[string]string{})
+	err := LoadComponents(root, dir, map[string]string{})
 	if err == nil {
-		t.Fatal("LoadComponents should error when a required dir is missing")
+		t.Fatal("LoadComponents should error on a lowercase component filename")
+	}
+	if !strings.Contains(err.Error(), "card.html") || !strings.Contains(err.Error(), "uppercase") {
+		t.Fatalf("error %q does not report the capitalization rule", err)
 	}
 }
 
-func TestLoadComponentsMissingDirOptional(t *testing.T) {
+func TestLoadComponentsMissingDir(t *testing.T) {
 	r := &Renderer{}
 	root := template.New("root").Funcs(r.FuncMap())
-	err := LoadComponents(root, filepath.Join(t.TempDir(), "does-not-exist"), false, map[string]string{})
+	err := LoadComponents(root, filepath.Join(t.TempDir(), "does-not-exist"), map[string]string{})
 	if err != nil {
-		t.Fatalf("LoadComponents should not error when an optional dir is missing: %v", err)
+		t.Fatalf("LoadComponents should not error when dir is missing: %v", err)
 	}
 }
 
@@ -95,20 +101,20 @@ func TestLoadComponentsMissingDirOptional(t *testing.T) {
 func TestLoadComponentsCollision(t *testing.T) {
 	componentsDir := t.TempDir()
 	layoutsDir := t.TempDir()
-	writeFile(t, filepath.Join(componentsDir, "card.html"), `<div class="card"></div>`)
-	writeFile(t, filepath.Join(layoutsDir, "card.html"), `<div class="layout-card"></div>`)
+	writeFile(t, filepath.Join(componentsDir, "Card.html"), `<div class="card"></div>`)
+	writeFile(t, filepath.Join(layoutsDir, "Card.html"), `<div class="layout-card"></div>`)
 
 	r := &Renderer{}
 	root := template.New("root").Funcs(r.FuncMap())
 	seen := map[string]string{}
-	if err := LoadComponents(root, componentsDir, true, seen); err != nil {
+	if err := LoadComponents(root, componentsDir, seen); err != nil {
 		t.Fatalf("LoadComponents(componentsDir): %v", err)
 	}
-	err := LoadComponents(root, layoutsDir, false, seen)
+	err := LoadComponents(root, layoutsDir, seen)
 	if err == nil {
 		t.Fatal("LoadComponents should error when a name is defined in two directories")
 	}
-	if !strings.Contains(err.Error(), "card") {
+	if !strings.Contains(err.Error(), "Card") {
 		t.Fatalf("error %q does not name the colliding component", err)
 	}
 }

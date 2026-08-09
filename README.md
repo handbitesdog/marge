@@ -23,11 +23,23 @@ blog posts.
 
 ## Installation
 
-Build the binary from source:
+Install the `marge` command with `go install`:
 
 ```bash
-go build -o marge .
+go install .
 ```
+
+This builds the binary and places it in `$(go env GOPATH)/bin`. Make sure
+that directory is on your `PATH` — add this to your shell profile
+(`~/.zshrc`, `~/.bashrc`, etc.) if it isn't already:
+
+```bash
+export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+After that, `marge` is available as a command from any project. Rerun
+`go install .` from this repo whenever the source changes, to refresh the
+installed binary.
 
 ## Usage
 

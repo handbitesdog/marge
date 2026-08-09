@@ -45,26 +45,38 @@ installed binary.
 ## Usage
 
 ```bash
-marge build <src> <dist>          # one-shot build
-marge serve <src> <dist> <addr>   # build, serve dist/, rebuild on change
+marge build [<src> <dist>]          # one-shot build
+marge serve [<src> <dist>] <addr>   # build, serve dist/, rebuild on change
 ```
+
+`src` and `dist` default to `src/` and `dist/` (relative to the current
+directory) when omitted; pass them explicitly to override.
 
 For example, to build and serve the reference site in [example/](example/):
 
 ```bash
-marge build example dist
-marge serve example dist :8080
+marge build example/src example/dist
+marge serve example/src example/dist :8080
+```
+
+or, from inside `example/` itself, relying on the defaults:
+
+```bash
+marge build
+marge serve :8080
 ```
 
 A `marge` site is expected to look like:
 
 ```
 mysite/
-  components/   # reusable HTML components (optional)
-  layouts/      # page-wrapping components (same syntax, own folder; optional)
-  pages/        # routed pages, mapped to pretty URLs (about.html -> /about/) — required
-  content/      # Markdown content with YAML front matter, grouped into collections (optional)
-  static/       # assets copied byte-for-byte into the output (optional)
+  src/
+    components/   # reusable HTML components (optional)
+    layouts/      # page-wrapping components (same syntax, own folder; optional)
+    pages/        # routed pages, mapped to pretty URLs (about.html -> /about/) — required
+    content/      # Markdown content with YAML front matter, grouped into collections (optional)
+    static/       # assets copied byte-for-byte into the output (optional)
+  dist/           # build output (created by `marge build`)
 ```
 
 `pages/` is the only required directory — everything else can be omitted

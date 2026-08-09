@@ -1,0 +1,7 @@
+# Build output
+/marge
+/dist/
+/dist_out/
+
+# Local-only Claude Code settings
+.claude/settings.local.json

@@ -1,0 +1,6 @@
+{{<layout Title="Blog">}}
+<h1>Blog</h1>
+{{range .Collections.blog.Items}}
+{{<card Title=.Title URL=.URL Date=.Date/>}}
+{{end}}
+{{</layout>}}

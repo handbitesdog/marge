@@ -4,29 +4,29 @@ A simple static-site generator written in Go, with reusable HTML components,
 file-based page routing, and a Markdown content pipeline for things like
 blog posts.
 
-Full design is in [PLAN.md](PLAN.md). The build is broken into phases,
-tracked in [PHASES.md](PHASES.md) — see that file for current progress.
+## Features
 
-## Status
-
-All phases in [PHASES.md](PHASES.md) are complete. `marge` builds and serves
-sites via the CLI described below.
+- **Components** — an HTML-tag-like syntax for reusable, argument-taking
+  template fragments (layouts are just components).
+- **File-based routing with pretty URLs** — `pages/about.html` becomes
+  `/about/`.
+- **Collections** — group Markdown content (e.g. blog posts) under
+  `content/<name>/` and list them from any page via `.Collections`.
+- **Static passthrough** — anything in `static/` is copied byte-for-byte
+  into the output.
+- **Dev server** — `marge serve` builds, serves the output over HTTP, and
+  rebuilds automatically as source files change.
 
 ## Requirements
 
 - Go 1.25+
 
-## Building
+## Installation
+
+Build the binary from source:
 
 ```bash
-go build ./...
-go vet ./...
-```
-
-## Testing
-
-```bash
-go test ./...
+go build -o marge .
 ```
 
 ## Usage
@@ -34,6 +34,13 @@ go test ./...
 ```bash
 marge build <src> <dist>          # one-shot build
 marge serve <src> <dist> <addr>   # build, serve dist/, rebuild on change
+```
+
+For example, to build and serve the reference site in [example/](example/):
+
+```bash
+marge build example dist
+marge serve example dist :8080
 ```
 
 A `marge` site is expected to look like:
@@ -46,5 +53,73 @@ mysite/
   static/       # assets copied byte-for-byte into the output
 ```
 
-See [PLAN.md](PLAN.md) for the full design, including component syntax,
-collections, and URL mapping.
+## Components
+
+Files under `components/` and `pages/` can use a self-closing or block tag
+syntax inside `{{}}` to render a component:
+
+```html
+{{<card Title=.Title URL=.URL Date=.Date/>}}
+```
+
+```html
+{{<layout Title="Home">}}
+<h1>Welcome to marge</h1>
+{{</layout>}}
+```
+
+A block tag's body is rendered and passed to the component as `.Children`.
+`key=value` pairs are plain Go template pipeline operands (string literals
+or `.Field`), so `components/layout.html` above can reference `.Title` and
+`.Children` like any other template:
+
+```html
+<title>{{.Title}}</title>
+<main>{{.Children}}</main>
+```
+
+## Content & collections
+
+Each subdirectory of `content/` is a collection. A Markdown file with YAML
+front matter:
+
+```markdown
+---
+title: "Hello, World!"
+date: 2024-01-05
+---
+
+This is the **first post** on the example site.
+```
+
+is exposed to every page and item template as `.Collections.<name>`, so a
+homepage can list posts the same way a blog index does:
+
+```html
+{{range .Collections.blog.Items}}
+{{<card Title=.Title URL=.URL Date=.Date/>}}
+{{end}}
+```
+
+`pages/<collection>/_item.html`, if present, is the per-item template for
+that collection — it's executed once per item and written to
+`dist/<collection>/<slug>/index.html`.
+
+## Development
+
+```bash
+go build ./...
+go vet ./...
+go test ./...
+```
+
+## Status
+
+All phases in [PHASES.md](PHASES.md) are complete. `marge` builds and serves
+sites via the CLI described above.
+
+## Further reading
+
+Full design is in [PLAN.md](PLAN.md), including the macro-preprocessor
+algorithm, key types, and the build pipeline. The build was broken into
+phases, tracked in [PHASES.md](PHASES.md).

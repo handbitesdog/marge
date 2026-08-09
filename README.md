@@ -96,6 +96,10 @@ reference `.title` and `$children` like any other template:
 <main>{{$children}}</main>
 ```
 
+`$`-prefixed names are reserved for marge-injected values like `$children` —
+avoid declaring your own `$`-prefixed template variables inside a component
+or layout to prevent them from shadowing marge's own.
+
 ## Content & collections
 
 Each subdirectory of `content/` is a collection. A Markdown file with YAML

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-const exampleDir = "../../example"
+const exampleDir = "../../example/src"
 
 // TestRunBuildsExampleSite is the integration test for the full pipeline: it
 // runs Run against the example/ fixture site and checks the output pages,

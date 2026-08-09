@@ -1,6 +1,6 @@
 # Build output
 /marge
-/dist/
+dist/
 /dist_out/
 
 # Local-only Claude Code settings

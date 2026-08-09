@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -51,13 +52,20 @@ func Run(src, dist, addr string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	server := &http.Server{Addr: addr, Handler: http.FileServer(http.Dir(dist))}
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		return fmt.Errorf("listen %q: %w", addr, err)
+	}
+
+	server := &http.Server{Handler: http.FileServer(http.Dir(dist))}
 	serverErr := make(chan error, 1)
 	go func() {
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			serverErr <- fmt.Errorf("serve %q: %w", addr, err)
 		}
 	}()
+
+	log.Printf("serving %s at http://localhost:%d", dist, listener.Addr().(*net.TCPAddr).Port)
 
 	go watchLoop(ctx, watcher, opts)
 

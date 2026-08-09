@@ -34,6 +34,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, "marge build:", err)
 			os.Exit(1)
 		}
+		fmt.Fprintln(os.Stderr, "built")
 
 	case "serve":
 		src, dist, addr, ok := serveArgs(os.Args[2:])

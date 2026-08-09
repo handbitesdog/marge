@@ -36,6 +36,7 @@ func Run(src, dist, addr string) error {
 	if err := build.Run(opts); err != nil {
 		return fmt.Errorf("initial build: %w", err)
 	}
+	log.Println("built")
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {

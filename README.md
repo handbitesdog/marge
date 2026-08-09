@@ -9,10 +9,8 @@ tracked in [PHASES.md](PHASES.md) — see that file for current progress.
 
 ## Status
 
-Early in development. Only the module scaffolding and core data types
-(`internal/site`) exist so far — there is no CLI or build pipeline yet, so
-`marge` cannot build a site yet. This section will be updated as the CLI
-lands.
+All phases in [PHASES.md](PHASES.md) are complete. `marge` builds and serves
+sites via the CLI described below.
 
 ## Requirements
 
@@ -31,9 +29,7 @@ go vet ./...
 go test ./...
 ```
 
-## Planned usage
-
-Once the CLI lands ([Phase 8](PHASES.md)), the intended interface is:
+## Usage
 
 ```bash
 marge build <src> <dist>          # one-shot build

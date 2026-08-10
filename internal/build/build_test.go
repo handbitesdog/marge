@@ -34,6 +34,7 @@ func TestRunBuildsExampleSite(t *testing.T) {
 		filepath.Join("about", "index.html"),
 		filepath.Join("blog", "index.html"),
 		filepath.Join("blog", "hello-world", "index.html"),
+		filepath.Join("uses", "index.html"),
 	} {
 		if _, err := os.Stat(filepath.Join(dist, rel)); err != nil {
 			t.Errorf("expected %s to exist: %v", rel, err)
@@ -67,6 +68,11 @@ func TestRunBuildsExampleSite(t *testing.T) {
 	}
 	if !(posSecond < posThird && posThird < posHello) {
 		t.Errorf("blog/index.html posts not newest-first: Second=%d, Third=%d, Hello=%d", posSecond, posThird, posHello)
+	}
+
+	uses := readFile(filepath.Join("uses", "index.html"))
+	if !strings.Contains(uses, "ThinkPad X1 Carbon") || !strings.Contains(uses, "$1400") {
+		t.Errorf("uses/index.html missing expected data-driven row, got:\n%s", uses)
 	}
 
 	wantCSS, err := os.ReadFile(filepath.Join(exampleDir, "static", "css", "site.css"))
@@ -147,5 +153,31 @@ func TestRunMissingPagesDir(t *testing.T) {
 	src := t.TempDir()
 	if err := Run(Options{SrcDir: src, DistDir: t.TempDir()}); err == nil {
 		t.Fatal("Run should error when pages/ is missing")
+	}
+}
+
+// TestRunExposesDataToItemTemplates checks that data/ values are available
+// as .Data on both ordinary pages and per-collection item templates.
+func TestRunExposesDataToItemTemplates(t *testing.T) {
+	src := t.TempDir()
+	writeFile(t, filepath.Join(src, "data", "colors.json"), `["red", "green"]`)
+	writeFile(t, filepath.Join(src, "pages", "index.html"), `{{range .Data.colors}}{{.}} {{end}}`)
+	writeFile(t, filepath.Join(src, "pages", "blog", "_item.html"), `{{range .Data.colors}}{{.}} {{end}}`)
+	writeFile(t, filepath.Join(src, "content", "blog", "post.md"),
+		"---\ntitle: Post\ndate: 2024-01-01\n---\nBody.\n")
+
+	dist := t.TempDir()
+	if err := Run(Options{SrcDir: src, DistDir: dist}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	for _, rel := range []string{"index.html", filepath.Join("blog", "post", "index.html")} {
+		got, err := os.ReadFile(filepath.Join(dist, rel))
+		if err != nil {
+			t.Fatalf("read %s: %v", rel, err)
+		}
+		if string(got) != "red green " {
+			t.Errorf("%s = %q, want %q", rel, got, "red green ")
+		}
 	}
 }

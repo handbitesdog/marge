@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/handbitesdog/marge/internal/content"
+	"github.com/handbitesdog/marge/internal/data"
 	"github.com/handbitesdog/marge/internal/site"
 	"github.com/handbitesdog/marge/internal/tmpl"
 )
@@ -45,6 +46,11 @@ func Run(opts Options) error {
 		return err
 	}
 
+	dataValues, err := data.LoadAll(filepath.Join(opts.SrcDir, "data"))
+	if err != nil {
+		return err
+	}
+
 	pagesDir := filepath.Join(opts.SrcDir, "pages")
 	pages, itemTemplates, err := Discover(pagesDir)
 	if err != nil {
@@ -72,18 +78,18 @@ func Run(opts Options) error {
 	renderer.SetTemplateSet(root)
 
 	for _, p := range pages {
-		data := site.PageData{Collections: collections}
+		pageData := site.PageData{Collections: collections, Data: dataValues}
 		out := filepath.Join(opts.DistDir, p.OutputPath)
-		if err := executeToFile(root, p.SourcePath, data, out); err != nil {
+		if err := executeToFile(root, p.SourcePath, pageData, out); err != nil {
 			return err
 		}
 	}
 
 	for name, rel := range itemTemplates {
 		for _, item := range collections[name].Items {
-			data := site.ItemData{CollectionItem: item, Collections: collections}
+			itemData := site.ItemData{CollectionItem: item, Collections: collections, Data: dataValues}
 			out := filepath.Join(opts.DistDir, name, item.Slug, "index.html")
-			if err := executeToFile(root, rel, data, out); err != nil {
+			if err := executeToFile(root, rel, itemData, out); err != nil {
 				return err
 			}
 		}

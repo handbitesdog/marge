@@ -1,0 +1,13 @@
+{{<Layout title="Uses">}}
+<h1>Uses</h1>
+<table>
+<tr><th>Name</th><th>Price</th><th>Image</th></tr>
+{{range .Data.uses}}
+<tr>
+<td>{{.name}}</td>
+<td>${{.price_usd}}</td>
+<td><img src="{{.image}}" alt="{{.name}}"></td>
+</tr>
+{{end}}
+</table>
+{{</Layout>}}

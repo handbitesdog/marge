@@ -13,6 +13,9 @@ blog posts.
   `/about/`.
 - **Collections** — group Markdown content (e.g. blog posts) under
   `content/<name>/` and list them from any page via `.Collections`.
+- **JSON data** — drop a `.json` file in `data/` and use it from any page via
+  `.Data`, for content that's more naturally a flat list of records (e.g. a
+  table) than one Markdown file per item.
 - **Static passthrough** — anything in `static/` is copied byte-for-byte
   into the output.
 - **Dev server** — `marge serve` builds, serves the output over HTTP, and
@@ -75,6 +78,7 @@ mysite/
     layouts/      # page-wrapping components (same syntax, own folder; optional)
     pages/        # routed pages, mapped to pretty URLs (about.html -> /about/) — required
     content/      # Markdown content with YAML front matter, grouped into collections (optional)
+    data/         # JSON files exposed to templates as .Data (optional)
     static/       # assets copied byte-for-byte into the output (optional)
   dist/           # build output (created by `marge build`)
 ```
@@ -143,6 +147,28 @@ homepage can list posts the same way a blog index does:
 `pages/<collection>/_item.html`, if present, is the per-item template for
 that collection — it's executed once per item and written to
 `dist/<collection>/<slug>/index.html`.
+
+## Data
+
+Each top-level `.json` file in `data/` is exposed to every page and item
+template as `.Data.<filename>` (without the `.json` extension), decoded as
+plain JSON — objects, arrays, strings, numbers, whatever the file holds. This
+is a better fit than a collection for content that's naturally a flat list of
+records rather than one Markdown file per item, e.g. `data/uses.json`:
+
+```json
+[
+  { "name": "ThinkPad X1 Carbon", "price_usd": 1400, "image": "/static/uses/thinkpad.jpg" }
+]
+```
+
+```html
+<table>
+{{range .Data.uses}}
+<tr><td>{{.name}}</td><td>${{.price_usd}}</td><td><img src="{{.image}}"></td></tr>
+{{end}}
+</table>
+```
 
 ## Development
 

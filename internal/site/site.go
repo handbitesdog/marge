@@ -33,10 +33,12 @@ type Collection struct {
 // PageData is the template data context for ordinary pages.
 type PageData struct {
 	Collections map[string]Collection // keyed by content/ subdirectory name
+	Data        map[string]any        // keyed by data/ filename, without .json
 }
 
 // ItemData is the template data context for a single collection item.
 type ItemData struct {
 	CollectionItem
 	Collections map[string]Collection
+	Data        map[string]any
 }

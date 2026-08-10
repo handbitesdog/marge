@@ -1,0 +1,12 @@
+[
+  {
+    "name": "ThinkPad X1 Carbon",
+    "price_usd": 1400,
+    "image": "/static/uses/thinkpad.jpg"
+  },
+  {
+    "name": "HHKB Studio",
+    "price_usd": 385,
+    "image": "/static/uses/hhkb.jpg"
+  }
+]

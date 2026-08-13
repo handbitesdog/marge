@@ -4,6 +4,7 @@ go 1.25.5
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0
+	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/yuin/goldmark v1.7.17
 	gopkg.in/yaml.v3 v3.0.1
 )

@@ -76,3 +76,73 @@ func TestLoadAllMissingDir(t *testing.T) {
 		t.Fatalf("data = %#v, want empty", got)
 	}
 }
+
+// TestLoadAllSchemaValid checks that a data file passing its sibling schema
+// loads normally, and that the schema file itself isn't exposed as data.
+func TestLoadAllSchemaValid(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "footbags.json"), `[
+		{"name": "Whirled", "weight_g": 34.5}
+	]`)
+	writeFile(t, filepath.Join(dir, "footbags.schema.json"), `{
+		"type": "array",
+		"items": {
+			"type": "object",
+			"required": ["name", "weight_g"],
+			"properties": {
+				"name": {"type": "string"},
+				"weight_g": {"type": "number"}
+			}
+		}
+	}`)
+
+	got, err := LoadAll(dir)
+	if err != nil {
+		t.Fatalf("LoadAll: %v", err)
+	}
+	if _, ok := got["footbags"]; !ok {
+		t.Fatalf(`data["footbags"] missing, got %#v`, got)
+	}
+	if _, ok := got["footbags.schema"]; ok {
+		t.Fatalf("schema file leaked into data as %q", "footbags.schema")
+	}
+	if len(got) != 1 {
+		t.Fatalf("len(data) = %d, want 1: %#v", len(got), got)
+	}
+}
+
+// TestLoadAllSchemaInvalid checks that data violating its sibling schema
+// fails the build with an error naming both files.
+func TestLoadAllSchemaInvalid(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "footbags.json"), `[
+		{"name": "Whirled"}
+	]`)
+	writeFile(t, filepath.Join(dir, "footbags.schema.json"), `{
+		"type": "array",
+		"items": {
+			"type": "object",
+			"required": ["name", "weight_g"]
+		}
+	}`)
+
+	_, err := LoadAll(dir)
+	if err == nil {
+		t.Fatal("LoadAll should error when data violates its schema")
+	}
+}
+
+// TestLoadAllSchemaUnmatchedIgnored checks that a schema file with no
+// matching data file is silently ignored rather than erroring.
+func TestLoadAllSchemaUnmatchedIgnored(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "orphan.schema.json"), `{"type": "array"}`)
+
+	got, err := LoadAll(dir)
+	if err != nil {
+		t.Fatalf("LoadAll should not error on an unmatched schema file: %v", err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("data = %#v, want empty", got)
+	}
+}

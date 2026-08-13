@@ -170,6 +170,28 @@ records rather than one Markdown file per item, e.g. `data/uses.json`:
 </table>
 ```
 
+A data file named `<name>.json` can be paired with a sibling
+`<name>.schema.json` [JSON Schema](https://json-schema.org/) file in the same
+directory. If present, the data is validated against it and a mismatch fails
+the build with the offending file and schema. Schema files aren't themselves
+exposed as data, and a schema file with no matching data file is ignored.
+
+```json
+// data/uses.schema.json
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name", "price_usd", "image"],
+    "properties": {
+      "name": { "type": "string" },
+      "price_usd": { "type": "number" },
+      "image": { "type": "string" }
+    }
+  }
+}
+```
+
 ## Development
 
 ```bash

@@ -1,0 +1,12 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name", "price_usd", "image"],
+    "properties": {
+      "name": { "type": "string" },
+      "price_usd": { "type": "number" },
+      "image": { "type": "string" }
+    }
+  }
+}
